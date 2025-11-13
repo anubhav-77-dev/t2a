@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="py-10">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Hero Section -->
+        <div class="text-center mb-10">
+            <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
+                Turn Trailers into 
+                <span class="text-purple-600">Campaigns</span>
+            </h1>
+            <p class="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
+                AI-powered marketing campaign generation from movie trailers
+            </p>
+        </div>
+
+        <!-- Generation Form -->
+        <div class="bg-white shadow-xl rounded-lg overflow-hidden card-shadow">
+            <div class="px-4 py-5 sm:p-6">
+                <form id="campaign-form" class="space-y-6">
+                    <!-- Trailer URL -->
+                    <div>
+                        <label for="trailer-url" class="block text-sm font-medium text-gray-700">
+                            YouTube Trailer URL
+                        </label>
+                        <div class="mt-1">
+                            <input type="url" 
+                                   id="trailer-url" 
+                                   name="trailer_url" 
+                                   required
+                                   placeholder="https://www.youtube.com/watch?v=..."
+                                   class="shadow-sm focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md px-3 py-2 border">
+                        </div>
+                        <p class="mt-2 text-sm text-gray-500">
+                            Example: https://www.youtube.com/watch?v=Way9Dexny3w
+                        </p>
+                    </div>
+
+                    <!-- Movie Title -->
+                    <div>
+                        <label for="movie-title" class="block text-sm font-medium text-gray-700">
+                            Movie Title
+                        </label>
+                        <div class="mt-1">
+                            <input type="text" 
+                                   id="movie-title" 
+                                   name="movie_title" 
+                                   required
+                                   placeholder="e.g., Dune: Part Two"
+                                   class="shadow-sm focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md px-3 py-2 border">
+                        </div>
+                    </div>
+
+                    <!-- Target Regions -->
+                    <div>
+                        <label for="regions" class="block text-sm font-medium text-gray-700">
+                            Target Regions
+                        </label>
+                        <div class="mt-1">
+                            <input type="text" 
+                                   id="regions" 
+                                   name="regions" 
+                                   placeholder="US, UK, CA, AU, IN"
+                                   value="US, UK, IN"
+                                   class="shadow-sm focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md px-3 py-2 border">
+                        </div>
+                        <p class="mt-2 text-sm text-gray-500">
+                            Comma-separated country codes (max 3 recommended)
+                        </p>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div>
+                        <button type="submit"
+                                class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors">
+                            <span id="submit-text">🚀 Generate Campaign</span>
+                            <span id="loading-spinner" class="hidden ml-2">
+                                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Progress Section (Hidden by default) -->
+        <div id="progress-section" class="hidden mt-6 bg-white shadow rounded-lg overflow-hidden">
+            <div class="px-4 py-5 sm:p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-lg font-medium text-gray-900">Generating Campaign...</h3>
+                    <span id="progress-percentage" class="text-sm font-medium text-purple-600">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div id="progress-bar" class="bg-purple-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <p id="progress-message" class="mt-2 text-sm text-gray-600">Starting...</p>
+                
+                <!-- Steps Indicator -->
+                <div class="mt-4 grid grid-cols-3 gap-2">
+                    <div id="step-1" class="text-center p-2 rounded bg-gray-100">
+                        <div class="text-2xl mb-1">📊</div>
+                        <div class="text-xs text-gray-600">Metadata</div>
+                    </div>
+                    <div id="step-2" class="text-center p-2 rounded bg-gray-100">
+                        <div class="text-2xl mb-1">💬</div>
+                        <div class="text-xs text-gray-600">Engagement</div>
+                    </div>
+                    <div id="step-3" class="text-center p-2 rounded bg-gray-100">
+                        <div class="text-2xl mb-1">🎭</div>
+                        <div class="text-xs text-gray-600">Sentiment</div>
+                    </div>
+                    <div id="step-4" class="text-center p-2 rounded bg-gray-100">
+                        <div class="text-2xl mb-1">📈</div>
+                        <div class="text-xs text-gray-600">Trends</div>
+                    </div>
+                    <div id="step-5" class="text-center p-2 rounded bg-gray-100">
+                        <div class="text-2xl mb-1">📝</div>
+                        <div class="text-xs text-gray-600">Ad Copy</div>
+                    </div>
+                    <div id="step-6" class="text-center p-2 rounded bg-gray-100">
+                        <div class="text-2xl mb-1">🤖</div>
+                        <div class="text-xs text-gray-600">AI Enhance</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="text-3xl">🎬</div>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">
+                                    YouTube Analysis
+                                </dt>
+                                <dd class="text-sm text-gray-900">
+                                    Views, engagement, sentiment from comments
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="text-3xl">🤖</div>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">
+                                    AI Enhancement
+                                </dt>
+                                <dd class="text-sm text-gray-900">
+                                    Gemini-powered creative ad generation
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white overflow-hidden shadow rounded-lg">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="text-3xl">🌍</div>
+                        </div>
+                        <div class="ml-5 w-0 flex-1">
+                            <dl>
+                                <dt class="text-sm font-medium text-gray-500 truncate">
+                                    Regional Targeting
+                                </dt>
+                                <dd class="text-sm text-gray-900">
+                                    Market scoring and rollout planning
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    let currentJobId = null;
+    let pollInterval = null;
+
+    document.getElementById('campaign-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const data = {
+            trailer_url: formData.get('trailer_url'),
+            movie_title: formData.get('movie_title'),
+            regions: formData.get('regions')
+        };
+        
+        // Show progress section
+        document.getElementById('progress-section').classList.remove('hidden');
+        
+        // Disable form
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        document.getElementById('submit-text').textContent = 'Generating...';
+        document.getElementById('loading-spinner').classList.remove('hidden');
+        
+        try {
+            const response = await fetch('/api/generate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            currentJobId = result.job_id;
+            
+            // Start polling for status
+            pollInterval = setInterval(checkStatus, 1000);
+            
+        } catch (error) {
+            alert('Error: ' + error.message);
+            resetForm();
+        }
+    });
+
+    async function checkStatus() {
+        if (!currentJobId) return;
+        
+        try {
+            const response = await fetch(`/api/status/${currentJobId}`);
+            const status = await response.json();
+            
+            // Update progress bar
+            document.getElementById('progress-bar').style.width = status.progress + '%';
+            document.getElementById('progress-percentage').textContent = status.progress + '%';
+            document.getElementById('progress-message').textContent = status.message;
+            
+            // Update step indicators
+            const stepCount = Math.floor(status.progress / 16.67); // 6 steps
+            for (let i = 1; i <= 6; i++) {
+                const step = document.getElementById(`step-${i}`);
+                if (i <= stepCount) {
+                    step.classList.remove('bg-gray-100');
+                    step.classList.add('bg-purple-100');
+                }
+            }
+            
+            if (status.status === 'completed') {
+                clearInterval(pollInterval);
+                
+                // Use the filename from the status response
+                const filename = status.filename;
+                
+                // Redirect to results
+                setTimeout(() => {
+                    window.location.href = `/view/${filename}`;
+                }, 1000);
+            } else if (status.status === 'error') {
+                clearInterval(pollInterval);
+                alert('Error generating campaign: ' + status.error);
+                resetForm();
+            }
+        } catch (error) {
+            console.error('Polling error:', error);
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('progress-section').classList.add('hidden');
+        const submitBtn = document.querySelector('button[type="submit"]');
+        submitBtn.disabled = false;
+        document.getElementById('submit-text').textContent = '🚀 Generate Campaign';
+        document.getElementById('loading-spinner').classList.add('hidden');
+        document.getElementById('progress-bar').style.width = '0%';
+    }
+</script>
+{% endblock %}

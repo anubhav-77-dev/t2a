@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Trailer-to-Campaign Autopilot{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom styles -->
+    <style>
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-pulse-slow {
+            animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .card-shadow:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full">
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="gradient-bg shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 flex items-center">
+                            <span class="text-2xl font-bold text-white">🎬</span>
+                            <span class="ml-2 text-xl font-semibold text-white">Trailer-to-Campaign</span>
+                        </div>
+                        <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                            <a href="/" class="border-transparent text-white hover:border-white hover:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Generate
+                            </a>
+                            <a href="#" onclick="showRecentCampaigns()" class="border-transparent text-white hover:border-white hover:text-gray-100 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium">
+                                Recent Campaigns
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        <div id="config-status" class="flex items-center space-x-2 text-white text-sm">
+                            <span id="ai-status" class="flex items-center">
+                                <span class="h-2 w-2 rounded-full bg-gray-300 mr-1"></span>
+                                <span>AI: Loading...</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main>
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white border-t border-gray-200 mt-auto">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                <p class="text-center text-sm text-gray-500">
+                    Powered by TMDb, YouTube, Google Trends, and Gemini AI
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Recent Campaigns Modal -->
+    <div id="campaigns-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Recent Campaigns</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-500">
+                    <span class="text-2xl">&times;</span>
+                </button>
+            </div>
+            <div id="campaigns-list" class="space-y-2 max-h-96 overflow-y-auto">
+                <!-- Populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load configuration status
+        fetch('/api/config')
+            .then(r => r.json())
+            .then(data => {
+                const aiStatus = document.getElementById('ai-status');
+                if (data.gemini_configured || data.openai_configured) {
+                    const provider = data.gemini_configured ? 'Gemini' : 'OpenAI';
+                    aiStatus.innerHTML = `
+                        <span class="h-2 w-2 rounded-full bg-green-400 mr-1"></span>
+                        <span>AI: ${provider}</span>
+                    `;
+                } else {
+                    aiStatus.innerHTML = `
+                        <span class="h-2 w-2 rounded-full bg-yellow-400 mr-1"></span>
+                        <span>AI: Disabled</span>
+                    `;
+                }
+            });
+
+        function showRecentCampaigns() {
+            document.getElementById('campaigns-modal').classList.remove('hidden');
+            
+            fetch('/api/campaigns')
+                .then(r => r.json())
+                .then(data => {
+                    const list = document.getElementById('campaigns-list');
+                    if (data.campaigns.length === 0) {
+                        list.innerHTML = '<p class="text-gray-500 text-center py-4">No campaigns generated yet</p>';
+                        return;
+                    }
+                    
+                    list.innerHTML = data.campaigns.map(c => `
+                        <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer" onclick="window.location='/view/${c.filename}'">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-medium text-gray-900">${c.movie_title}</h4>
+                                    <p class="text-sm text-gray-500">${c.regions.join(', ')}</p>
+                                </div>
+                                <span class="text-xs text-gray-400">${new Date(c.generated_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                });
+        }
+
+        function closeModal() {
+            document.getElementById('campaigns-modal').classList.add('hidden');
+        }
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

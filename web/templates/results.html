@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+
+{% block title %}Campaign Results - {{ filename }}{% endblock %}
+
+{% block content %}
+<div class="py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Loading State -->
+        <div id="loading" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <p class="mt-4 text-gray-600">Loading campaign...</p>
+        </div>
+
+        <!-- Campaign Results (Hidden initially) -->
+        <div id="results" class="hidden">
+            <!-- Header -->
+            <div class="mb-8">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h1 id="movie-title" class="text-3xl font-bold text-gray-900"></h1>
+                        <p id="generated-at" class="mt-1 text-sm text-gray-500"></p>
+                    </div>
+                    <a href="/" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700">
+                        Generate New Campaign
+                    </a>
+                </div>
+            </div>
+
+            <!-- Movie Info Card -->
+            <div class="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg shadow-lg p-6 text-white mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <h3 class="text-sm font-medium opacity-90">Genres</h3>
+                        <p id="genres" class="mt-1 text-lg font-semibold"></p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium opacity-90">Cast</h3>
+                        <p id="cast" class="mt-1 text-lg font-semibold"></p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium opacity-90">Director</h3>
+                        <p id="director" class="mt-1 text-lg font-semibold"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metrics Grid -->
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <span class="text-3xl">👁️</span>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">YouTube Views</dt>
+                                    <dd id="views" class="text-lg font-semibold text-gray-900">-</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <span class="text-3xl">💬</span>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Comments Analyzed</dt>
+                                    <dd id="comments" class="text-lg font-semibold text-gray-900">-</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <span class="text-3xl">😊</span>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Sentiment</dt>
+                                    <dd id="sentiment" class="text-lg font-semibold text-gray-900">-</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white overflow-hidden shadow rounded-lg">
+                    <div class="p-5">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <span class="text-3xl">🌍</span>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Top Region</dt>
+                                    <dd id="top-region" class="text-lg font-semibold text-gray-900">-</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="border-b border-gray-200 mb-6">
+                <nav class="-mb-px flex space-x-8">
+                    <button onclick="showTab('ad-copy')" class="tab-btn border-purple-500 text-purple-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                        Ad Copy
+                    </button>
+                    <button onclick="showTab('social')" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                        Social Media
+                    </button>
+                    <button onclick="showTab('rollout')" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                        Rollout Plan
+                    </button>
+                    <button onclick="showTab('insights')" class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                        AI Insights
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Contents -->
+            <div id="ad-copy-tab" class="tab-content">
+                <div class="space-y-4">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">🤖 AI-Enhanced Ad Copy</h2>
+                    <div id="ai-ad-variants" class="space-y-3"></div>
+                    
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4 mt-8">📝 Template Ad Copy</h2>
+                    <div id="template-ad-variants" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <div id="social-tab" class="tab-content hidden">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">📱 Social Media Posts</h2>
+                <div id="social-posts" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+
+            <div id="rollout-tab" class="tab-content hidden">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">📅 Campaign Rollout Plan</h2>
+                <div id="rollout-plan" class="space-y-4"></div>
+            </div>
+
+            <div id="insights-tab" class="tab-content hidden">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">💡 AI Strategic Insights</h2>
+                <div id="ai-insights" class="space-y-6"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const filename = "{{ filename }}";
+let campaignData = null;
+
+// Load campaign data
+fetch(`/api/campaign/${filename}`)
+    .then(r => r.json())
+    .then(data => {
+        campaignData = data;
+        renderCampaign(data);
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('results').classList.remove('hidden');
+    })
+    .catch(err => {
+        document.getElementById('loading').innerHTML = `
+            <div class="text-red-600">
+                <p class="text-xl font-semibold">Error loading campaign</p>
+                <p class="text-sm mt-2">${err.message}</p>
+                <a href="/" class="mt-4 inline-block text-purple-600 hover:text-purple-800">← Go back</a>
+            </div>
+        `;
+    });
+
+function renderCampaign(data) {
+    // Header
+    document.getElementById('movie-title').textContent = data.movie_data?.title || 'Unknown';
+    document.getElementById('generated-at').textContent = `Generated: ${new Date(data.generated_at).toLocaleString()}`;
+    
+    // Movie info
+    document.getElementById('genres').textContent = data.movie_data?.genres?.join(', ') || 'N/A';
+    document.getElementById('cast').textContent = data.movie_data?.cast?.slice(0, 3).join(', ') || 'N/A';
+    document.getElementById('director').textContent = data.movie_data?.directors?.[0] || 'N/A';
+    
+    // Metrics
+    const trailer = data.trailer_analysis?.stats || {};
+    document.getElementById('views').textContent = (trailer.view_count || 0).toLocaleString();
+    document.getElementById('comments').textContent = (data.sentiment_analysis?.total_comments || 0).toLocaleString();
+    document.getElementById('sentiment').textContent = (data.sentiment_analysis?.overall_sentiment || 'Unknown').toUpperCase();
+    
+    const topRegion = data.regional_analysis?.ranked_regions?.[0];
+    document.getElementById('top-region').textContent = topRegion ? `${topRegion.region} (${(topRegion.total_score || topRegion.score || 0).toFixed(1)})` : 'N/A';
+    
+    // Ad Copy - AI Enhanced
+    const aiAds = data.ad_copy?.ai_enhanced_variants || [];
+    const aiContainer = document.getElementById('ai-ad-variants');
+    if (aiAds.length > 0) {
+        aiContainer.innerHTML = aiAds.map((ad, i) => `
+            <div class="border-l-4 border-purple-500 bg-purple-50 p-4 rounded">
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-xs font-semibold text-purple-700 uppercase">${ad.length || 'Medium'} - ${ad.platform || 'General'}</span>
+                    <span class="text-xs text-gray-500">${ad.character_count || ad.text.length} chars</span>
+                </div>
+                <p class="text-gray-900">${ad.text}</p>
+            </div>
+        `).join('');
+    } else {
+        aiContainer.innerHTML = '<p class="text-gray-500">No AI variants generated</p>';
+    }
+    
+    // Ad Copy - Templates
+    const templateAds = data.ad_copy?.variants || [];
+    const templateContainer = document.getElementById('template-ad-variants');
+    templateContainer.innerHTML = templateAds.map((ad, i) => `
+        <div class="border-l-4 border-gray-400 bg-gray-50 p-4 rounded">
+            <div class="flex justify-between items-start mb-2">
+                <span class="text-xs font-semibold text-gray-700 uppercase">${ad.type}</span>
+                <span class="text-xs text-gray-500">${ad.character_count || ad.text.length} chars</span>
+            </div>
+            <p class="text-gray-900">${ad.text}</p>
+        </div>
+    `).join('');
+    
+    // Social Posts
+    const social = data.social_posts || {};
+    const socialContainer = document.getElementById('social-posts');
+    socialContainer.innerHTML = Object.entries(social).map(([platform, post]) => {
+        const icons = {twitter: '𝕏', instagram: '📸', facebook: '👥', tiktok: '🎵'};
+        return `
+            <div class="bg-white border rounded-lg p-4 shadow-sm">
+                <div class="flex items-center mb-3">
+                    <span class="text-2xl mr-2">${icons[platform] || '📱'}</span>
+                    <span class="font-semibold capitalize">${platform}</span>
+                </div>
+                <p class="text-gray-800 whitespace-pre-wrap">${post.text}</p>
+                ${post.hashtags ? `<div class="mt-2 text-sm text-blue-600">${post.hashtags.join(' ')}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+    
+    // Rollout Plan
+    const rollout = data.rollout_plan || {};
+    const timeline = rollout.timeline || [];
+    const overview = rollout.campaign_overview || {};
+    const rolloutContainer = document.getElementById('rollout-plan');
+    rolloutContainer.innerHTML = `
+        <div class="bg-white rounded-lg shadow p-6 mb-4">
+            <div class="grid grid-cols-2 gap-4 text-center">
+                <div>
+                    <p class="text-sm text-gray-500">Total Budget</p>
+                    <p class="text-2xl font-bold text-purple-600">$${(overview.total_budget || 0).toLocaleString()}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Duration</p>
+                    <p class="text-2xl font-bold text-purple-600">${overview.duration_weeks || 0} weeks</p>
+                </div>
+            </div>
+        </div>
+        ${timeline.map(week => `
+            <div class="bg-white rounded-lg shadow p-6 mb-4">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Week ${week.week}: ${week.phase}</h3>
+                        <p class="text-sm text-gray-500">${week.start_date} - ${week.end_date}</p>
+                    </div>
+                    <span class="px-3 py-1 text-sm font-semibold rounded-full ${
+                        week.intensity === 'High' ? 'bg-red-100 text-red-800' :
+                        week.intensity === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-green-100 text-green-800'
+                    }">${week.intensity}</span>
+                </div>
+                <div class="space-y-2">
+                    ${week.active_regions?.length ? `<div><strong>Regions:</strong> ${week.active_regions.join(', ')}</div>` : ''}
+                    <div><strong>Activities:</strong></div>
+                    <ul class="list-disc list-inside pl-4 space-y-1">
+                        ${week.key_activities.map(a => `<li class="text-sm text-gray-700">${a}</li>`).join('')}
+                    </ul>
+                </div>
+            </div>
+        `).join('')}
+    `;
+    
+    // AI Insights
+    const insights = data.insights?.ai_strategic_analysis || {};
+    const insightsContainer = document.getElementById('ai-insights');
+    insightsContainer.innerHTML = `
+        ${insights.opportunities?.length ? `
+            <div class="bg-green-50 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-green-900 mb-3">✓ Opportunities</h3>
+                <ul class="space-y-2">
+                    ${insights.opportunities.map(o => `<li class="text-green-800">• ${o}</li>`).join('')}
+                </ul>
+            </div>
+        ` : ''}
+        
+        ${insights.risks?.length ? `
+            <div class="bg-yellow-50 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-yellow-900 mb-3">⚠ Risks</h3>
+                <ul class="space-y-2">
+                    ${insights.risks.map(r => `<li class="text-yellow-800">• ${r}</li>`).join('')}
+                </ul>
+            </div>
+        ` : ''}
+        
+        ${insights.recommendations?.length ? `
+            <div class="bg-blue-50 rounded-lg p-6">
+                <h3 class="text-lg font-semibold text-blue-900 mb-3">→ Recommendations</h3>
+                <ul class="space-y-2">
+                    ${insights.recommendations.map(r => `<li class="text-blue-800">• ${r}</li>`).join('')}
+                </ul>
+            </div>
+        ` : ''}
+        
+        ${!insights.opportunities && !insights.risks && !insights.recommendations ? 
+            '<p class="text-gray-500">No AI insights available</p>' : ''}
+    `;
+}
+
+function showTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-purple-500', 'text-purple-600');
+        btn.classList.add('border-transparent', 'text-gray-500');
+    });
+    
+    // Show selected tab
+    document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+    event.target.classList.remove('border-transparent', 'text-gray-500');
+    event.target.classList.add('border-purple-500', 'text-purple-600');
+}
+</script>
+{% endblock %}
